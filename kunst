@@ -33,7 +33,7 @@ EOF
 update_cover() {
 	# extract the album art from the mp3 file and dont show the messsy
 	# output of ffmpeg
-	ffmpeg -i "$MUSIC_DIR/$(mpc current -f %file%)" $COVER -y &> /dev/null
+	ffmpeg -i "$MUSIC_DIR/$(mpc current -f %file%)" "$COVER" -y &> /dev/null
 
 	# get the status of the previous command
 	STATUS="$?"
@@ -49,7 +49,7 @@ update_cover() {
 	fi
 
 	# resize the image to 250x250
-	convert $COVER -resize $SIZE $COVER
+	convert "$COVER" -resize "$SIZE" "$COVER"
 
 	echo "kunst: resized album art to $SIZE"
 }
@@ -95,7 +95,7 @@ main() {
 	echo "kunst: swapped album art to $(mpc current)"
 
 	# display the album art using sxiv
-	sxiv -g $SIZE -b $COVER -N "Kunst" &
+	sxiv -g "$SIZE" -b "$COVER" -N "Kunst" &
 
 	while true; do
 		# waiting for an event from mpd; play/pause/next/previous
@@ -112,7 +112,7 @@ main() {
 
 			# decode the base64 encoded image and save it
 			# to /tmp/kunst.png
-			echo "$MUSIC_NOTE" | base64 --decode > $COVER
+			echo "$MUSIC_NOTE" | base64 --decode > "$COVER"
 		fi
 
 		echo "kunst: swapped album art to $(mpc current)"
