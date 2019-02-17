@@ -35,15 +35,15 @@ update_cover() {
 	# output of ffmpeg
 	ffmpeg -i "$MUSIC_DIR/$(mpc current -f %file%)" $COVER -y &> /dev/null
 
-    # get the status of the previous command
+	# get the status of the previous command
 	STATUS=$?
 
-    # check if the file has a embbeded album art
+	# check if the file has a embbeded album art
 	if [ $STATUS -eq 0 ];then
 		echo "kunst: extracted album art"
 		ARTLESS=false
 	else
-	    echo "error: file does not have an album art"
+		echo "error: file does not have an album art"
 		ARTLESS=true
 		return
 	fi
@@ -83,9 +83,9 @@ main() {
 	echo "music dir: $MUSIC_DIR"
 
 	if [ $ARTLESS == true ];then
-	    # change the path to COVER because the music note
+		# change the path to COVER because the music note
 		# image is a png not jpg
-	    COVER=/tmp/kunst.png
+		COVER=/tmp/kunst.png
 
 		# decode the base64 encoded image and save it
 		# to /tmp/kunst.png
@@ -98,9 +98,9 @@ main() {
 	sxiv -g $SIZE -b $COVER &
 
 	while true; do
-	    # waiting for an event from mpd; play/pause/next/previous
-	    # this is lets kunst use less CPU :)
-	    mpc idle &> /dev/null
+		# waiting for an event from mpd; play/pause/next/previous
+		# this is lets kunst use less CPU :)
+		mpc idle &> /dev/null
 		echo "kunst: received event from mpd"
 
 		update_cover
