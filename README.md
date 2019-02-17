@@ -24,8 +24,8 @@ Add ```kunst``` to a directory which is in you ```$PATH```
 
 - [x] use less CPU
 - [ ] add arguments (need to learn how to do this)
-  - [ ] music directory
-  - [ ] image size (dimentions)
+  - [x] music directory
+  - [x] image size (dimentions)
 
 ## License
 MIT License

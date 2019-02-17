@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # ┬┌─┬ ┬┌┐┌┌─┐┌┬┐
-# ├┴┐│ ││││└─┐ │ 
-# ┴ ┴└─┘┘└┘└─┘ ┴ 
+# ├┴┐│ ││││└─┐ │
+# ┴ ┴└─┘┘└┘└─┘ ┴
 # Created by Siddharth Dushantha
 
 VERSION=1.0
-COVER=/tmp/kunst.jpg
-MUSIC_DIR=~/Music/
+COVER="/tmp/kunst.jpg"
+MUSIC_DIR="~/Music/"
+SIZE="250x250"
 
 # this is a base64 endcoded image which will be used if
 # if the file does not have an emmbeded album art.
@@ -16,10 +17,22 @@ iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
 EOF
 
 
+usage() {
+	cat << EOF
+Well IDK what exactly to put here.
+
+OPTIONS
+	-h		print this message and exit
+	-d|--music-dir	specify music directory (path)
+	-s|--size	specify size (<H>x<L>)
+EOF
+	exit 0
+}
+
 update_cover() {
 	# extract the album art from the mp3 file and dont show the messsy
 	# output of ffmpeg
-	ffmpeg -i "$MUSIC_DIR$(mpc current -f %file%)" $COVER -y &> /dev/null
+	ffmpeg -i "$MUSIC_DIR/$(mpc current -f %file%)" $COVER -y &> /dev/null
 
     # get the status of the previous command
 	STATUS=$?
@@ -35,14 +48,38 @@ update_cover() {
 	fi
 
 	# resize the image to 250x250
-	convert $COVER -resize 250x250 $COVER 
+	convert $COVER -resize $SIZE $COVER
 
-	echo "kunst: resized album art to 250x250"
+	echo "kunst: resized album art to $SIZE"
 }
 
+get_opts() {
+	# long way; there's also getopts (builtin) and getopt (external)
+	# cannot handle values attached to short options (e.g. -d~/Music)
+	# consumes arguments but does nothing with unspecified options
+	while (( "$#" )); do
+		# handle '--long-opt=val' and '--long-opt val' via param substitution
+		[[ $1 == --*=* ]] && set -- "${1%%=*}" "${1#*=}" "${@:2}"
+		# remove line above for only whitespace separators
+		case "$1" in
+			-h|--help)
+				usage
+				# "shift" one argument ahead
+				shift ;;
+			-d|--music-dir)
+				MUSIC_DIR="$2"
+				shift 2 ;;
+			-s|--size)
+				SIZE="$2"
+				shift 2 ;;
+		esac
+	done
+}
 
 main() {
+	get_opts "$@"
 	update_cover
+	echo "music dir: $MUSIC_DIR"
 
 	if [ $ARTLESS == true ];then
 	    # change the path to COVER because the music note
@@ -51,13 +88,13 @@ main() {
 
 		# decode the base64 encoded image and save it
 		# to /tmp/kunst.png
-		echo $MUSIC_NOTE | base64 --decode > $COVER
+		base64 --decode - <<< "$MUSIC_NOTE" > "$COVER"
 	fi
-	
+
 	echo "kunst: swapped album art to $(mpc current)"
 
 	# display the album art using sxiv
-	sxiv -g 250x250 -b $COVER &
+	sxiv -g $SIZE -b $COVER &
 
 	while true; do
 	    # waiting for an event from mpd; play/pause/next/previous
@@ -82,4 +119,4 @@ main() {
 }
 
 
-main
+main "$@"
